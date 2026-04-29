@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/client";
 import type { Article, Category } from "@/types";
 
@@ -24,7 +24,7 @@ function sortArticles(items: ArticleWithCategory[]): ArticleWithCategory[] {
 // ─── Supabase fetchers ────────────────────────────────────────────────────────
 
 async function fetchCategories(): Promise<Category[]> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
   const { data, error } = await supabase
     .from("categories")
     .select("*")
@@ -34,7 +34,7 @@ async function fetchCategories(): Promise<Category[]> {
 }
 
 async function fetchPublishedArticles(): Promise<ArticleWithCategory[]> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
   const { data, error } = await supabase
     .from("articles")
     .select("*, category:categories(*)")
@@ -45,7 +45,7 @@ async function fetchPublishedArticles(): Promise<ArticleWithCategory[]> {
 }
 
 async function fetchCategoryBySlug(slug: string): Promise<Category | null> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
   const { data } = await supabase
     .from("categories")
     .select("*")
@@ -58,7 +58,7 @@ async function fetchArticleBySlug(
   categorySlug: string,
   slug: string
 ): Promise<ArticleWithCategory | null> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
   const { data } = await supabase
     .from("articles")
     .select("*, category:categories(*)")
