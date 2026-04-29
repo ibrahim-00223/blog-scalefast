@@ -65,7 +65,7 @@ export default async function ArticlePage({ params }: Props) {
               <a href="mailto:hello@scalefast.fr?subject=Discovery%20Call" className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-sf-blue">Parler a Scalefast</a>
             </div>
           </div>
-          <div className="space-y-6">
+          <div className="sticky top-24 self-start space-y-6">
             <TableOfContents headings={headings} />
             <div className="sf-card p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sf-gray-400">Explorer</p>
@@ -91,4 +91,3 @@ export default async function ArticlePage({ params }: Props) {
     </div>
   );
 }
-

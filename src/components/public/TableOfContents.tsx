@@ -24,12 +24,19 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
   if (!headings.length) return null;
 
   return (
-    <aside className="sf-card sticky top-24 p-5">
+    <aside className="sf-card p-5">
       <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-sf-gray-400">Table of contents</p>
       <ul className="space-y-3">
         {headings.map((heading) => (
           <li key={heading.id}>
-            <a href={`#${heading.id}`} className={`block text-sm leading-6 ${activeId === heading.id ? "font-semibold text-sf-blue" : "text-sf-gray-600 hover:text-sf-navy"} ${heading.level === 3 ? "pl-4" : ""}`}>
+            <a
+              href={`#${heading.id}`}
+              className={`block text-sm leading-6 font-medium ${
+                activeId === heading.id
+                  ? "text-sf-blue"
+                  : "text-sf-gray-600 hover:text-sf-navy"
+              } ${heading.level === 3 ? "pl-4" : ""}`}
+            >
               {heading.text}
             </a>
           </li>
@@ -38,4 +45,3 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
     </aside>
   );
 }
-
