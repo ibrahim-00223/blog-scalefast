@@ -16,7 +16,15 @@ export function Navbar() {
           <Link href="/blog#categories" className="text-[13px] font-medium text-white/90 hover:text-white">Categories</Link>
           <Link href="/blog#about" className="text-[13px] font-medium text-white/90 hover:text-white">A propos</Link>
         </nav>
-        <a href="mailto:hello@scalefast.fr?subject=Discovery%20Call" className="sf-button-ghost text-[13px]">Discovery Call</a>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin"
+            className="hidden text-[12px] font-medium text-white/50 hover:text-white/80 md:block"
+          >
+            Admin
+          </Link>
+          <a href="mailto:hello@scalefast.fr?subject=Discovery%20Call" className="sf-button-ghost text-[13px]">Discovery Call</a>
+        </div>
       </div>
     </header>
   );
