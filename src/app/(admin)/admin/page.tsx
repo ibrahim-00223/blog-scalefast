@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/client";
 import { SignOutButton } from "./SignOutButton";
@@ -43,6 +44,17 @@ export default async function AdminPage() {
         <p className="mt-4 max-w-2xl text-sf-gray-600">
           Session active: <span className="font-semibold">{user.email}</span>
         </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/admin/articles" className="sf-button-primary">
+            Gerer les articles
+          </Link>
+          <Link
+            href="/blog"
+            className="rounded-full border border-sf-gray-200 px-4 py-2 text-sm font-semibold text-sf-gray-600"
+          >
+            Voir le blog
+          </Link>
+        </div>
       </div>
     </div>
   );
