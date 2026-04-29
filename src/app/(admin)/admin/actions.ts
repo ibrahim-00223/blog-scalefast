@@ -158,7 +158,7 @@ async function generateSeoArticleFromBrief(input: {
   categoryName?: string;
 }) {
   const client = createOpenAIClient();
-  const model = process.env.OPENAI_MODEL || "gpt-5.2";
+  const model = process.env.OPENAI_MODEL || "gpt-4o";
 
   const response = await client.responses.create({
     model,
