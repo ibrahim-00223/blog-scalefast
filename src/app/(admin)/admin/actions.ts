@@ -28,11 +28,14 @@ function toTipTapDoc(text: string) {
 }
 
 export async function createArticleAction(formData: FormData) {
-  const title = String(formData.get("title") ?? "").trim();
-  if (!title) return;
+  const briefSubject = String(formData.get("brief_subject") ?? "").trim();
+  const briefAudience = String(formData.get("brief_audience") ?? "").trim();
+  const briefMessage = String(formData.get("brief_message") ?? "").trim();
+  if (!briefSubject || !briefAudience || !briefMessage) return;
 
-  const excerpt = String(formData.get("excerpt") ?? "").trim();
   const categoryId = String(formData.get("category_id") ?? "").trim() || null;
+  const title = briefSubject;
+  const excerpt = `${briefMessage} Pour ${briefAudience.toLowerCase()}.`;
 
   const supabase = await createClient();
   const {
@@ -52,7 +55,10 @@ export async function createArticleAction(formData: FormData) {
     status: "idea",
     category_id: categoryId,
     author_id: user.id,
-    content: toTipTapDoc(excerpt || title),
+    brief_subject: briefSubject,
+    brief_audience: briefAudience,
+    brief_message: briefMessage,
+    content: toTipTapDoc(`${briefMessage}\n\nAudience: ${briefAudience}`),
     meta_title: `${title} | Scalefast`,
     meta_description: excerpt || `Article ${title}`,
   });
@@ -119,4 +125,3 @@ export async function updateArticleAction(formData: FormData) {
   revalidatePath("/admin/articles");
   revalidatePath(`/admin/articles/${id}`);
 }
-

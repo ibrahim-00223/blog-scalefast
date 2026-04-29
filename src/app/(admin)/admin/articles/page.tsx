@@ -113,21 +113,57 @@ export default async function AdminArticlesPage() {
           </p>
           <h2 className="mt-2 text-3xl">Nouveau brouillon</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-sf-gray-600">
-            On cree un article propre avec un titre, une categorie et un angle.
-            L edition detaillee vient juste apres.
+            Le brief de depart repose sur tes 3 questions. On transforme ensuite
+            ce brief en brouillon editable.
           </p>
 
           <form action={createArticleAction} className="mt-6 grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-sf-navy">Titre</label>
-              <input
-                name="title"
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-medium text-sf-navy">
+                1. De quoi veux-tu parler ?
+              </label>
+              <textarea
+                name="brief_subject"
                 required
-                placeholder="Ex. Comment structurer un pipeline GTM"
-                className="w-full rounded-xl border border-sf-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-sf-blue-mid"
+                placeholder="Ex. cold email, pipeline GTM, discovery call, IA SDR..."
+                className="min-h-28 w-full rounded-xl border border-sf-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-sf-blue-mid"
               />
+              <p className="mt-2 text-xs leading-6 text-sf-gray-400">
+                Sert a identifier le sujet et a generer les mots-cles associes.
+              </p>
             </div>
-            <div>
+
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-medium text-sf-navy">
+                2. A qui veux-tu parler ?
+              </label>
+              <textarea
+                name="brief_audience"
+                required
+                placeholder="Ex. SDR managers en SaaS B2B, fondateurs early-stage, RevOps..."
+                className="min-h-28 w-full rounded-xl border border-sf-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-sf-blue-mid"
+              />
+              <p className="mt-2 text-xs leading-6 text-sf-gray-400">
+                Sert a identifier la cible et adapter le ton, les exemples et le niveau.
+              </p>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-medium text-sf-navy">
+                3. Quelle valeur veux-tu partager ?
+              </label>
+              <textarea
+                name="brief_message"
+                required
+                placeholder="Ex. un framework, une analyse, une methode, un retour d experience..."
+                className="min-h-32 w-full rounded-xl border border-sf-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-sf-blue-mid"
+              />
+              <p className="mt-2 text-xs leading-6 text-sf-gray-400">
+                Sert a capturer la valeur transmise dans l article.
+              </p>
+            </div>
+
+            <div className="md:col-span-2">
               <label className="mb-2 block text-sm font-medium text-sf-navy">Categorie</label>
               <select
                 name="category_id"
@@ -141,14 +177,6 @@ export default async function AdminArticlesPage() {
                   </option>
                 ))}
               </select>
-            </div>
-            <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-sf-navy">Extrait</label>
-              <textarea
-                name="excerpt"
-                placeholder="Resume l article en 2 ou 3 phrases."
-                className="min-h-32 w-full rounded-xl border border-sf-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-sf-blue-mid"
-              />
             </div>
             <div className="md:col-span-2">
               <button type="submit" className="sf-button-primary">
@@ -170,7 +198,7 @@ export default async function AdminArticlesPage() {
               </p>
               <p className="mt-2 font-semibold text-sf-navy">Creer</p>
               <p className="mt-1 text-sm leading-6 text-sf-gray-600">
-                Demarre avec un titre fort et une categorie bien choisie.
+                Commence avec sujet, audience et valeur. Le brouillon se structure a partir de ca.
               </p>
             </div>
             <div className="rounded-2xl border border-sf-gray-200 bg-white p-4">
