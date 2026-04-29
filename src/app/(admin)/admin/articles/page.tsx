@@ -88,7 +88,11 @@ export default async function AdminArticlesPage() {
                 <tr key={article.id} className="border-t border-sf-gray-200">
                   <td className="px-4 py-3 font-medium text-sf-navy">{article.title}</td>
                   <td className="px-4 py-3 uppercase text-xs tracking-[0.1em]">{article.status}</td>
-                  <td className="px-4 py-3">{article.category?.name ?? "-"}</td>
+                  <td className="px-4 py-3">
+                    {Array.isArray(article.category)
+                      ? article.category[0]?.name ?? "-"
+                      : article.category?.name ?? "-"}
+                  </td>
                   <td className="px-4 py-3">
                     {article.published_at
                       ? formatDate(article.published_at)
@@ -111,4 +115,3 @@ export default async function AdminArticlesPage() {
     </div>
   );
 }
-
