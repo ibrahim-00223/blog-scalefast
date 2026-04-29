@@ -142,6 +142,15 @@ function buildTipTapDocFromGeneratedArticle(payload: GeneratedArticlePayload) {
   };
 }
 
+function buildArticlesErrorRedirect(message: string) {
+  return `/admin/articles?error=${encodeURIComponent(message)}`;
+}
+
+function buildArticleEditorRedirect(id: string, status?: string) {
+  const query = status ? `?status=${encodeURIComponent(status)}` : "";
+  return `/admin/articles/${id}${query}`;
+}
+
 async function generateSeoArticleFromBrief(input: {
   briefSubject: string;
   briefAudience: string;
@@ -199,7 +208,9 @@ export async function createArticleAction(formData: FormData) {
   const slugBase = slugify(title);
   const slug = `${slugBase}-${Date.now().toString().slice(-6)}`;
 
-  const { error } = await supabase.from("articles").insert({
+  const { data, error } = await supabase
+    .from("articles")
+    .insert({
     title,
     slug,
     excerpt: excerpt || null,
@@ -212,14 +223,17 @@ export async function createArticleAction(formData: FormData) {
     content: toTipTapDoc(`${briefMessage}\n\nAudience: ${briefAudience}`),
     meta_title: `${title} | Scalefast`,
     meta_description: excerpt || `Article ${title}`,
-  });
+    })
+    .select("id")
+    .single();
 
   if (error) {
-    throw new Error(error.message);
+    redirect(buildArticlesErrorRedirect(error.message));
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/articles");
+  redirect(buildArticleEditorRedirect(data.id, "draft-created"));
 }
 
 export async function createArticleWithAIAction(formData: FormData) {
@@ -248,48 +262,59 @@ export async function createArticleWithAIAction(formData: FormData) {
     categoryName = category?.name ?? "";
   }
 
-  const generated = await generateSeoArticleFromBrief({
-    briefSubject,
-    briefAudience,
-    briefMessage,
-    categoryName,
-  });
+  try {
+    const generated = await generateSeoArticleFromBrief({
+      briefSubject,
+      briefAudience,
+      briefMessage,
+      categoryName,
+    });
 
-  const slug = `${slugify(generated.title)}-${Date.now().toString().slice(-6)}`;
-  const { error } = await supabase.from("articles").insert({
-    title: generated.title,
-    slug,
-    excerpt: generated.excerpt,
-    status: "review",
-    category_id: categoryId,
-    author_id: user.id,
-    brief_subject: briefSubject,
-    brief_audience: briefAudience,
-    brief_message: briefMessage,
-    ai_plan: {
-      h1: generated.title,
-      angle: generated.angle,
-      sections: generated.sections.map((section) => ({
-        h2: section.heading,
-        description: section.paragraphs[0] ?? "",
-      })),
-      estimated_words: generated.readingTimeMinutes * 180,
-      keywords: generated.keywords,
-      tone: "expert, practical, credible",
-    },
-    ai_plan_validated_at: new Date().toISOString(),
-    content: buildTipTapDocFromGeneratedArticle(generated),
-    meta_title: generated.metaTitle,
-    meta_description: generated.metaDescription,
-    reading_time_minutes: generated.readingTimeMinutes,
-  });
+    const slug = `${slugify(generated.title)}-${Date.now().toString().slice(-6)}`;
+    const { data, error } = await supabase
+      .from("articles")
+      .insert({
+        title: generated.title,
+        slug,
+        excerpt: generated.excerpt,
+        status: "review",
+        category_id: categoryId,
+        author_id: user.id,
+        brief_subject: briefSubject,
+        brief_audience: briefAudience,
+        brief_message: briefMessage,
+        ai_plan: {
+          h1: generated.title,
+          angle: generated.angle,
+          sections: generated.sections.map((section) => ({
+            h2: section.heading,
+            description: section.paragraphs[0] ?? "",
+          })),
+          estimated_words: generated.readingTimeMinutes * 180,
+          keywords: generated.keywords,
+          tone: "expert, practical, credible",
+        },
+        ai_plan_validated_at: new Date().toISOString(),
+        content: buildTipTapDocFromGeneratedArticle(generated),
+        meta_title: generated.metaTitle,
+        meta_description: generated.metaDescription,
+        reading_time_minutes: generated.readingTimeMinutes,
+      })
+      .select("id")
+      .single();
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      redirect(buildArticlesErrorRedirect(error.message));
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/articles");
+    redirect(buildArticleEditorRedirect(data.id, "ai-generated"));
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Generation IA impossible.";
+    redirect(buildArticlesErrorRedirect(message));
   }
-
-  revalidatePath("/admin");
-  revalidatePath("/admin/articles");
 }
 
 export async function updateArticleAction(formData: FormData) {
@@ -345,12 +370,13 @@ export async function updateArticleAction(formData: FormData) {
     .eq("author_id", user.id);
 
   if (error) {
-    throw new Error(error.message);
+    redirect(buildArticleEditorRedirect(id, `error:${error.message}`));
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/articles");
   revalidatePath(`/admin/articles/${id}`);
+  redirect(buildArticleEditorRedirect(id, "saved"));
 }
 
 export async function generateArticleForExistingDraftAction(formData: FormData) {
@@ -380,50 +406,57 @@ export async function generateArticleForExistingDraftAction(formData: FormData) 
     categoryName = category?.name ?? "";
   }
 
-  const generated = await generateSeoArticleFromBrief({
-    briefSubject,
-    briefAudience,
-    briefMessage,
-    categoryName,
-  });
+  try {
+    const generated = await generateSeoArticleFromBrief({
+      briefSubject,
+      briefAudience,
+      briefMessage,
+      categoryName,
+    });
 
-  const { error } = await supabase
-    .from("articles")
-    .update({
-      title: generated.title,
-      slug: slugify(generated.title),
-      excerpt: generated.excerpt,
-      brief_subject: briefSubject,
-      brief_audience: briefAudience,
-      brief_message: briefMessage,
-      category_id: categoryId,
-      status: "review",
-      ai_plan: {
-        h1: generated.title,
-        angle: generated.angle,
-        sections: generated.sections.map((section) => ({
-          h2: section.heading,
-          description: section.paragraphs[0] ?? "",
-        })),
-        estimated_words: generated.readingTimeMinutes * 180,
-        keywords: generated.keywords,
-        tone: "expert, practical, credible",
-      },
-      ai_plan_validated_at: new Date().toISOString(),
-      content: buildTipTapDocFromGeneratedArticle(generated),
-      meta_title: generated.metaTitle,
-      meta_description: generated.metaDescription,
-      reading_time_minutes: generated.readingTimeMinutes,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id)
-    .eq("author_id", user.id);
+    const { error } = await supabase
+      .from("articles")
+      .update({
+        title: generated.title,
+        slug: slugify(generated.title),
+        excerpt: generated.excerpt,
+        brief_subject: briefSubject,
+        brief_audience: briefAudience,
+        brief_message: briefMessage,
+        category_id: categoryId,
+        status: "review",
+        ai_plan: {
+          h1: generated.title,
+          angle: generated.angle,
+          sections: generated.sections.map((section) => ({
+            h2: section.heading,
+            description: section.paragraphs[0] ?? "",
+          })),
+          estimated_words: generated.readingTimeMinutes * 180,
+          keywords: generated.keywords,
+          tone: "expert, practical, credible",
+        },
+        ai_plan_validated_at: new Date().toISOString(),
+        content: buildTipTapDocFromGeneratedArticle(generated),
+        meta_title: generated.metaTitle,
+        meta_description: generated.metaDescription,
+        reading_time_minutes: generated.readingTimeMinutes,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .eq("author_id", user.id);
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      redirect(buildArticleEditorRedirect(id, `error:${error.message}`));
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/articles");
+    revalidatePath(`/admin/articles/${id}`);
+    redirect(buildArticleEditorRedirect(id, "ai-regenerated"));
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Generation IA impossible.";
+    redirect(buildArticleEditorRedirect(id, `error:${message}`));
   }
-
-  revalidatePath("/admin");
-  revalidatePath("/admin/articles");
-  revalidatePath(`/admin/articles/${id}`);
 }
