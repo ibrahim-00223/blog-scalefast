@@ -4,6 +4,22 @@ import { createClient } from "@/lib/supabase/server";
 import { createArticleAction } from "../actions";
 import { formatDate } from "@/lib/utils";
 
+type ArticleRow = {
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+  published_at: string | null;
+  created_at: string;
+  category: { name: string } | { name: string }[] | null;
+};
+
+function getCategoryName(category: ArticleRow["category"]) {
+  if (!category) return "-";
+  if (Array.isArray(category)) return category[0]?.name ?? "-";
+  return category.name ?? "-";
+}
+
 export default async function AdminArticlesPage() {
   const supabase = await createClient();
   const {
@@ -11,7 +27,7 @@ export default async function AdminArticlesPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: categories }, { data: articles }] = await Promise.all([
+  const [{ data: categories }, { data: rawArticles }] = await Promise.all([
     supabase.from("categories").select("id,name").order("name"),
     supabase
       .from("articles")
@@ -19,6 +35,7 @@ export default async function AdminArticlesPage() {
       .eq("author_id", user.id)
       .order("created_at", { ascending: false }),
   ]);
+  const articles = (rawArticles ?? []) as ArticleRow[];
 
   return (
     <div className="sf-container py-12 space-y-8">
@@ -88,11 +105,7 @@ export default async function AdminArticlesPage() {
                 <tr key={article.id} className="border-t border-sf-gray-200">
                   <td className="px-4 py-3 font-medium text-sf-navy">{article.title}</td>
                   <td className="px-4 py-3 uppercase text-xs tracking-[0.1em]">{article.status}</td>
-                  <td className="px-4 py-3">
-                    {Array.isArray(article.category)
-                      ? article.category[0]?.name ?? "-"
-                      : article.category?.name ?? "-"}
-                  </td>
+                  <td className="px-4 py-3">{getCategoryName(article.category)}</td>
                   <td className="px-4 py-3">
                     {article.published_at
                       ? formatDate(article.published_at)
