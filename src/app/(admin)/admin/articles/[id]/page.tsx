@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { updateArticleAction } from "../../actions";
+import {
+  generateArticleForExistingDraftAction,
+  updateArticleAction,
+} from "../../actions";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -53,6 +56,39 @@ export default async function AdminArticleEditPage({ params }: Props) {
               defaultValue={article.title}
               required
               className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-sf-navy">
+              1. De quoi veux-tu parler ?
+            </label>
+            <textarea
+              name="brief_subject"
+              defaultValue={article.brief_subject ?? ""}
+              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm min-h-24"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-sf-navy">
+              2. A qui veux-tu parler ?
+            </label>
+            <textarea
+              name="brief_audience"
+              defaultValue={article.brief_audience ?? ""}
+              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm min-h-24"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-sf-navy">
+              3. Quelle valeur veux-tu partager ?
+            </label>
+            <textarea
+              name="brief_message"
+              defaultValue={article.brief_message ?? ""}
+              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm min-h-28"
             />
           </div>
 
@@ -136,12 +172,20 @@ export default async function AdminArticleEditPage({ params }: Props) {
             />
           </div>
 
-          <button type="submit" className="sf-button-primary md:w-fit">
-            Enregistrer
-          </button>
+          <div className="md:col-span-2 flex flex-wrap gap-3">
+            <button type="submit" className="sf-button-primary md:w-fit">
+              Enregistrer
+            </button>
+            <button
+              type="submit"
+              formAction={generateArticleForExistingDraftAction}
+              className="inline-flex items-center justify-center rounded-full border border-sf-blue bg-white px-5 py-3 text-sm font-semibold text-sf-blue hover:bg-sf-blue-light"
+            >
+              Regenerer avec IA
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createArticleAction } from "../actions";
+import { createArticleAction, createArticleWithAIAction } from "../actions";
 import { formatDate } from "@/lib/utils";
 
 type ArticleRow = {
@@ -178,9 +178,16 @@ export default async function AdminArticlesPage() {
                 ))}
               </select>
             </div>
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 flex flex-wrap gap-3">
               <button type="submit" className="sf-button-primary">
                 Creer le brouillon
+              </button>
+              <button
+                type="submit"
+                formAction={createArticleWithAIAction}
+                className="inline-flex items-center justify-center rounded-full border border-sf-blue bg-white px-5 py-3 text-sm font-semibold text-sf-blue hover:bg-sf-blue-light"
+              >
+                Creer et generer avec IA
               </button>
             </div>
           </form>
@@ -218,6 +225,16 @@ export default async function AdminArticlesPage() {
               <p className="mt-1 text-sm leading-6 text-sf-gray-600">
                 Passe le statut a <span className="font-semibold">published</span>
                 pour rendre l article visible sur le front public.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-sf-gray-200 bg-white p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sf-gray-400">
+                IA
+              </p>
+              <p className="mt-2 font-semibold text-sf-navy">SEO + EEAT</p>
+              <p className="mt-1 text-sm leading-6 text-sf-gray-600">
+                Le bouton IA produit un draft SEO, structure H2/H3, meta title,
+                meta description, FAQ et angle expert a relire avant publication.
               </p>
             </div>
           </div>
