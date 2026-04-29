@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getCategories, getPublishedArticles } from "@/lib/content/data";
 
-const BASE_URL = "https://scalefast.fr";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://scalefast.fr";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [categories, articles] = await Promise.all([getCategories(), getPublishedArticles()]);

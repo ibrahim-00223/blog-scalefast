@@ -22,7 +22,7 @@ export default async function SearchPage({ searchParams }: Props) {
         <form action="/blog/search" className="mt-8">
           <label className="flex items-center gap-3 rounded-full border border-sf-gray-200 bg-white px-5 py-4">
             <Search className="h-5 w-5 text-sf-gray-400" />
-            <input type="search" name="q" defaultValue={query} placeholder="Ex. GTM, pipeline, discovery call" className="w-full bg-transparent text-base outline-none placeholder:text-sf-gray-400" />
+            <input type="search" name="q" defaultValue={query} placeholder="Ex. GTM, pipeline, discovery call" aria-label="Rechercher un article" className="w-full bg-transparent text-base outline-none placeholder:text-sf-gray-400" />
           </label>
         </form>
       </section>

@@ -66,6 +66,33 @@ function createOpenAIClient() {
   });
 }
 
+// ─── AI rate limiting ─────────────────────────────────────────────────────────
+// In-memory store: suitable for single-instance deployments (Railway).
+// For multi-replica setups, replace with a Redis or Supabase-backed counter.
+
+const AI_RATE_LIMIT_MAX = 3;
+const AI_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+const aiRateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkAiRateLimit(userId: string): void {
+  const now = Date.now();
+  const entry = aiRateLimitMap.get(userId);
+
+  if (!entry || now > entry.resetAt) {
+    aiRateLimitMap.set(userId, { count: 1, resetAt: now + AI_RATE_LIMIT_WINDOW_MS });
+    return;
+  }
+
+  if (entry.count >= AI_RATE_LIMIT_MAX) {
+    throw new Error(
+      `Limite de génération IA atteinte (${AI_RATE_LIMIT_MAX} par 10 min). Réessayez dans quelques minutes.`
+    );
+  }
+
+  entry.count += 1;
+}
+
 function buildTipTapDocFromGeneratedArticle(payload: GeneratedArticlePayload) {
   const content: Array<Record<string, unknown>> = [
     {
@@ -263,6 +290,8 @@ export async function createArticleWithAIAction(formData: FormData) {
   }
 
   try {
+    checkAiRateLimit(user.id);
+
     const generated = await generateSeoArticleFromBrief({
       briefSubject,
       briefAudience,
@@ -346,6 +375,21 @@ export async function updateArticleAction(formData: FormData) {
     redirect("/login");
   }
 
+  // Fetch the current article to preserve published_at:
+  // - If transitioning to "published" for the first time → set to now
+  // - If already published and re-saving → keep the original date
+  // - If moving away from "published" → preserve the historical date (never null it out)
+  const { data: currentArticle } = await supabase
+    .from("articles")
+    .select("published_at")
+    .eq("id", id)
+    .single();
+
+  const publishedAt =
+    status === "published"
+      ? (currentArticle?.published_at ?? new Date().toISOString())
+      : (currentArticle?.published_at ?? null);
+
   const { error } = await supabase
     .from("articles")
     .update({
@@ -361,7 +405,7 @@ export async function updateArticleAction(formData: FormData) {
       og_image_url: featuredImage || null,
       status,
       reading_time_minutes: readingTime,
-      published_at: status === "published" ? new Date().toISOString() : null,
+      published_at: publishedAt,
       meta_title: `${title} | Scalefast`,
       meta_description: excerpt || `Article ${title}`,
       updated_at: new Date().toISOString(),
@@ -407,6 +451,8 @@ export async function generateArticleForExistingDraftAction(formData: FormData) 
   }
 
   try {
+    checkAiRateLimit(user.id);
+
     const generated = await generateSeoArticleFromBrief({
       briefSubject,
       briefAudience,

@@ -7,6 +7,7 @@ import {
   generateArticleForExistingDraftAction,
   updateArticleAction,
 } from "../../actions";
+import { tipTapToPlainText } from "@/lib/utils";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -32,10 +33,8 @@ export default async function AdminArticleEditPage({ params, searchParams }: Pro
 
   if (!article) notFound();
 
-  const bodyText =
-    article.content?.content?.[0]?.content?.[0]?.text ??
-    article.excerpt ??
-    "";
+  // Extract all plain text from the TipTap document (not just the first node)
+  const bodyText = tipTapToPlainText(article.content) || article.excerpt || "";
 
   return (
     <div className="sf-container py-12 space-y-4">

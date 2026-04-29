@@ -26,12 +26,24 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-function getPlainText(node: TipTapNode): string {
+export function getPlainText(node: TipTapNode): string {
   if (node.type === "text") {
     return node.text || "";
   }
 
   return node.content?.map(getPlainText).join("") || "";
+}
+
+export function tipTapToPlainText(content: TipTapContent | null): string {
+  if (!content?.content) return "";
+  return content.content
+    .map((node) => {
+      const text = getPlainText(node);
+      // Add newlines between top-level blocks for readability
+      return text ? text + "\n" : "";
+    })
+    .join("")
+    .trim();
 }
 
 function nodeToHtml(node: TipTapNode): string {

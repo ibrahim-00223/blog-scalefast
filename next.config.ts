@@ -15,10 +15,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      allowedOrigins: [
-        "blog-scalefast-production.up.railway.app",
-        "localhost:3000",
-      ],
+      allowedOrigins: (process.env.ALLOWED_ORIGINS ?? "localhost:3000")
+        .split(",")
+        .map((s) => s.trim()),
     },
   },
 };

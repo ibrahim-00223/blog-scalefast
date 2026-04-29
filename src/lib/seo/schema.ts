@@ -1,6 +1,6 @@
 import type { Article, Category } from "@/types";
 
-const BASE_URL = "https://scalefast.fr";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://scalefast.fr";
 
 export function articleSchema(article: Article, category: Category) {
   return {
