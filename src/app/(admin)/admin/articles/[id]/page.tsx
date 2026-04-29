@@ -10,12 +10,14 @@ import {
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ status?: string }>;
 };
 
 const statuses = ["idea", "plan", "review", "scheduled", "published", "archived"];
 
-export default async function AdminArticleEditPage({ params }: Props) {
+export default async function AdminArticleEditPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { status } = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -36,7 +38,22 @@ export default async function AdminArticleEditPage({ params }: Props) {
     "";
 
   return (
-    <div className="sf-container py-12">
+    <div className="sf-container py-12 space-y-4">
+      {status?.startsWith("error:") && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+          Erreur : {decodeURIComponent(status.replace("error:", ""))}
+        </div>
+      )}
+      {status === "saved" && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+          Article enregistré.
+        </div>
+      )}
+      {status === "ai-regenerated" && (
+        <div className="rounded-xl border border-sf-blue-mid bg-sf-blue-light px-5 py-4 text-sm font-medium text-sf-blue">
+          Contenu régénéré par l&apos;IA — vérifie avant de publier.
+        </div>
+      )}
       <div className="sf-card p-6 md:p-8">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl">Editer l article</h1>
@@ -191,3 +208,4 @@ export default async function AdminArticleEditPage({ params }: Props) {
     </div>
   );
 }
+
