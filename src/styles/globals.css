@@ -88,11 +88,10 @@ a {
 }
 
 .sf-card {
-  background: rgba(255, 255, 255, 0.94);
+  background: #ffffff;
   border: 1px solid var(--sf-gray-200);
   border-radius: 18px;
   box-shadow: 0 16px 60px rgba(26, 31, 60, 0.06);
-  backdrop-filter: blur(8px);
 }
 
 .sf-button-primary {
