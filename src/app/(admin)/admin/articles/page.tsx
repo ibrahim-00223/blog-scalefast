@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createArticleAction, createArticleWithAIAction } from "../actions";
 import { formatDate } from "@/lib/utils";
 
+type SearchParams = Promise<{ error?: string; status?: string }>;
+
 type ArticleRow = {
   id: string;
   title: string;
@@ -37,7 +39,8 @@ function getStatusClasses(status: string) {
   }
 }
 
-export default async function AdminArticlesPage() {
+export default async function AdminArticlesPage(props: { searchParams: SearchParams }) {
+  const { error, status } = await props.searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -58,6 +61,22 @@ export default async function AdminArticlesPage() {
 
   return (
     <div className="sf-container py-12 space-y-8">
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+          Erreur : {decodeURIComponent(error)}
+        </div>
+      )}
+      {status === "draft-created" && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+          Brouillon créé — tu peux l&apos;éditer ci-dessous.
+        </div>
+      )}
+      {status === "ai-generated" && (
+        <div className="rounded-xl border border-sf-blue-mid bg-sf-blue-light px-5 py-4 text-sm font-medium text-sf-blue">
+          Article généré par l&apos;IA — vérifie le contenu avant de publier.
+        </div>
+      )}
+
       <section className="sf-card overflow-hidden">
         <div className="border-b border-sf-gray-200 bg-[linear-gradient(135deg,rgba(59,91,219,0.08),rgba(116,143,252,0.02))] p-6 md:p-8">
           <div className="flex items-start justify-between gap-4">
