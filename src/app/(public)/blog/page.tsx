@@ -8,7 +8,7 @@ import { generateBlogMetadata } from "@/lib/seo/metadata";
 import { getCategoryUrl } from "@/lib/utils";
 
 export const metadata: Metadata = generateBlogMetadata();
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export default async function BlogHomePage() {
   const [latestArticles, categorySpotlights] = await Promise.all([

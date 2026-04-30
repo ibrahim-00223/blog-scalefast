@@ -6,6 +6,8 @@ import { CategoryBadge } from "@/components/public/CategoryBadge";
 import { getArticlesByCategory, getCategories, getCategoryBySlug } from "@/lib/content/data";
 import { generateCategoryMetadata } from "@/lib/seo/metadata";
 
+export const revalidate = 60;
+
 type Props = { params: Promise<{ category: string }>; searchParams: Promise<{ page?: string }> };
 const PAGE_SIZE = 12;
 

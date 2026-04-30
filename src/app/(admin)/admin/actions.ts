@@ -71,6 +71,7 @@ export async function createArticleAction(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/admin/articles");
+  revalidatePath("/blog", "layout");
   redirect(buildArticleEditorRedirect(data.id, "draft-created"));
 }
 
@@ -165,6 +166,8 @@ export async function updateArticleAction(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/admin/articles");
   revalidatePath(`/admin/articles/${id}`);
+  // Revalidate all public blog pages so published/unpublished changes appear instantly
+  revalidatePath("/blog", "layout");
   redirect(buildArticleEditorRedirect(id, "saved"));
 }
 
@@ -189,5 +192,6 @@ export async function deleteArticleAction(id: string): Promise<{ error?: string 
 
   revalidatePath("/admin");
   revalidatePath("/admin/articles");
+  revalidatePath("/blog", "layout");
   return {};
 }

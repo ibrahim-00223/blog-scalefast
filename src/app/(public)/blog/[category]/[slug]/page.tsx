@@ -11,7 +11,7 @@ import { articleSchema, breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 import { extractFaqs, extractHeadings, formatDate, tipTapToHtml } from "@/lib/utils";
 
 type Props = { params: Promise<{ category: string; slug: string }> };
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const articles = await getPublishedArticles();
