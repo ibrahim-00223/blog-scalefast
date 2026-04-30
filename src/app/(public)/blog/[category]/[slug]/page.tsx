@@ -58,11 +58,24 @@ export default async function ArticlePage({ params }: Props) {
         <section className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(280px,3fr)]">
           <div className="sf-card p-8 md:p-10">
             <div className="prose-scalefast" dangerouslySetInnerHTML={{ __html: html }} />
-            <div className="mt-12 rounded-[20px] bg-sf-blue p-8 text-white">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Discovery Call</p>
-              <h2 className="mt-3 text-3xl text-white">Besoin d accelerer votre machine GTM ?</h2>
-              <p className="mt-3 max-w-2xl text-white/80">On peut cadrer vos priorites revenue et poser un plan d execution concret.</p>
-              <a href="mailto:hello@scalefast.fr?subject=Discovery%20Call" className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-sf-blue">Parler a Scalefast</a>
+            {/* In-article lead CTA */}
+            <div className="mt-12 overflow-hidden rounded-2xl bg-sf-blue p-8 text-white md:p-10">
+              <p className="text-xs font-bold uppercase tracking-widest text-white/60">
+                Discovery Call — Gratuit
+              </p>
+              <h2 className="mt-3 text-2xl font-extrabold leading-tight text-white md:text-3xl">
+                Besoin d&apos;accélérer votre machine GTM ?
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-white/75">
+                On cadre vos priorités revenue, on identifie les frictions dans votre funnel
+                et on pose un plan d&apos;exécution concret — en 45 minutes.
+              </p>
+              <a
+                href="mailto:hello@scalefast.fr?subject=Discovery%20Call"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-sf-blue transition hover:bg-sf-blue-light"
+              >
+                Parler à Scalefast →
+              </a>
             </div>
           </div>
           <div className="sticky top-24 self-start space-y-6">
@@ -78,13 +91,30 @@ export default async function ArticlePage({ params }: Props) {
           </div>
         </section>
         <section>
-          <div className="mb-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sf-blue">Articles connexes</p>
-            <h2 className="mt-2 text-3xl">Continuer dans {article.category.name}</h2>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {related.map((item) => <ArticleCard key={item.id} title={item.title} slug={item.slug} category={item.category} excerpt={item.excerpt} published_at={item.published_at} reading_time={item.reading_time_minutes} featured_image_url={item.featured_image_url} />)}
-          </div>
+          {related.length > 0 && (
+            <>
+              <div className="mb-6">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-sf-blue">Articles connexes</p>
+                <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-sf-navy md:text-3xl">
+                  Continuer dans {article.category.name}
+                </h2>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {related.map((item) => (
+                  <ArticleCard
+                    key={item.id}
+                    title={item.title}
+                    slug={item.slug}
+                    category={item.category}
+                    excerpt={item.excerpt}
+                    published_at={item.published_at}
+                    reading_time={item.reading_time_minutes}
+                    featured_image_url={item.featured_image_url}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </section>
       </article>
       {jsonLd.map((schema, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />)}
