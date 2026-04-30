@@ -3,24 +3,20 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  generateArticleForExistingDraftAction,
-  updateArticleAction,
-} from "../../actions";
-import { tipTapToPlainText } from "@/lib/utils";
+import { ArticleEditorClient } from "@/components/admin/ArticleEditorClient";
+import { ChevronLeft } from "lucide-react";
+import type { TipTapContent, ArticleStatus } from "@/types";
 
 type Props = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ status?: string }>;
 };
 
-const statuses = ["idea", "plan", "review", "scheduled", "published", "archived"];
-
 export default async function AdminArticleEditPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { status } = await searchParams;
-  const supabase = await createClient();
+  const { status: statusMsg } = await searchParams;
 
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -28,183 +24,98 @@ export default async function AdminArticleEditPage({ params, searchParams }: Pro
 
   const [{ data: categories }, { data: article }] = await Promise.all([
     supabase.from("categories").select("id,name").order("name"),
-    supabase.from("articles").select("*").eq("id", id).eq("author_id", user.id).single(),
+    supabase
+      .from("articles")
+      .select(
+        "id,title,slug,excerpt,content,status,category_id,brief_subject,brief_audience,brief_message,meta_title,meta_description,featured_image_url,reading_time_minutes"
+      )
+      .eq("id", id)
+      .eq("author_id", user.id)
+      .single(),
   ]);
 
   if (!article) notFound();
 
-  // Extract all plain text from the TipTap document (not just the first node)
-  const bodyText = tipTapToPlainText(article.content) || article.excerpt || "";
+  const notifMap: Record<string, { bg: string; text: string; msg: string }> = {
+    saved: {
+      bg: "bg-emerald-50 border-emerald-200",
+      text: "text-emerald-700",
+      msg: "Article enregistré.",
+    },
+    "draft-created": {
+      bg: "bg-emerald-50 border-emerald-200",
+      text: "text-emerald-700",
+      msg: "Brouillon créé — remplis le contenu.",
+    },
+    "ai-generated": {
+      bg: "bg-sf-blue-light border-sf-blue-mid",
+      text: "text-sf-blue",
+      msg: "Article généré par l'IA — vérifie avant de publier.",
+    },
+    "ai-regenerated": {
+      bg: "bg-sf-blue-light border-sf-blue-mid",
+      text: "text-sf-blue",
+      msg: "Article régénéré par l'IA.",
+    },
+  };
+  const notif = statusMsg && !statusMsg.startsWith("error:") ? notifMap[statusMsg] : null;
+  const errorMsg =
+    statusMsg?.startsWith("error:") ? decodeURIComponent(statusMsg.slice(6)) : null;
 
   return (
-    <div className="sf-container py-12 space-y-4">
-      {status?.startsWith("error:") && (
+    <div className="sf-container space-y-6 py-8">
+      {/* Back nav */}
+      <Link
+        href="/admin/articles"
+        className="flex items-center gap-1 text-sm font-medium text-sf-gray-600 hover:text-sf-blue"
+      >
+        <ChevronLeft size={16} />
+        Articles
+      </Link>
+
+      {/* Notifications */}
+      {notif && (
+        <div
+          className={`rounded-xl border px-5 py-4 text-sm font-medium ${notif.bg} ${notif.text}`}
+        >
+          {notif.msg}
+        </div>
+      )}
+      {errorMsg && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
-          Erreur : {decodeURIComponent(status.replace("error:", ""))}
+          Erreur : {errorMsg}
         </div>
       )}
-      {status === "saved" && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
-          Article enregistré.
-        </div>
-      )}
-      {status === "ai-regenerated" && (
-        <div className="rounded-xl border border-sf-blue-mid bg-sf-blue-light px-5 py-4 text-sm font-medium text-sf-blue">
-          Contenu régénéré par l&apos;IA — vérifie avant de publier.
-        </div>
-      )}
-      <div className="sf-card p-6 md:p-8">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl">Editer l article</h1>
-          <Link
-            href="/admin/articles"
-            className="rounded-full border border-sf-gray-200 px-4 py-2 text-sm font-semibold text-sf-gray-600"
-          >
-            Retour liste
-          </Link>
-        </div>
 
-        <form action={updateArticleAction} className="mt-6 grid gap-4 md:grid-cols-2">
-          <input type="hidden" name="id" value={article.id} />
-
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-sf-navy">Titre</label>
-            <input
-              name="title"
-              defaultValue={article.title}
-              required
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-sf-navy">
-              1. De quoi veux-tu parler ?
-            </label>
-            <textarea
-              name="brief_subject"
-              defaultValue={article.brief_subject ?? ""}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm min-h-24"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-sf-navy">
-              2. A qui veux-tu parler ?
-            </label>
-            <textarea
-              name="brief_audience"
-              defaultValue={article.brief_audience ?? ""}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm min-h-24"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-sf-navy">
-              3. Quelle valeur veux-tu partager ?
-            </label>
-            <textarea
-              name="brief_message"
-              defaultValue={article.brief_message ?? ""}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm min-h-28"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-sf-navy">Slug</label>
-            <input
-              name="slug"
-              defaultValue={article.slug}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-sf-navy">Statut</label>
-            <select
-              name="status"
-              defaultValue={article.status}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm"
-            >
-              {statuses.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-sf-navy">Categorie</label>
-            <select
-              name="category_id"
-              defaultValue={article.category_id ?? ""}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm"
-            >
-              <option value="">Aucune</option>
-              {(categories ?? []).map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-sf-navy">
-              Temps de lecture (min)
-            </label>
-            <input
-              type="number"
-              min={1}
-              name="reading_time_minutes"
-              defaultValue={article.reading_time_minutes ?? ""}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-sf-navy">Image URL</label>
-            <input
-              name="featured_image_url"
-              defaultValue={article.featured_image_url ?? ""}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-sf-navy">Extrait</label>
-            <textarea
-              name="excerpt"
-              defaultValue={article.excerpt ?? ""}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm min-h-24"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-sf-navy">Contenu brut</label>
-            <textarea
-              name="body_text"
-              defaultValue={bodyText}
-              className="w-full rounded-xl border border-sf-gray-200 px-4 py-3 text-sm min-h-52"
-            />
-          </div>
-
-          <div className="md:col-span-2 flex flex-wrap gap-3">
-            <button type="submit" className="sf-button-primary md:w-fit">
-              Enregistrer
-            </button>
-            <button
-              type="submit"
-              formAction={generateArticleForExistingDraftAction}
-              className="inline-flex items-center justify-center rounded-full border border-sf-blue bg-white px-5 py-3 text-sm font-semibold text-sf-blue hover:bg-sf-blue-light"
-            >
-              Regenerer avec IA
-            </button>
-          </div>
-        </form>
+      {/* Header */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-sf-blue">Éditeur</p>
+        <h1 className="mt-1 truncate text-2xl font-extrabold text-sf-navy">{article.title}</h1>
       </div>
+
+      {/* Editor */}
+      <ArticleEditorClient
+        article={{
+          id: article.id as string,
+          title: article.title as string,
+          slug: article.slug as string,
+          excerpt: (article.excerpt as string | null) ?? null,
+          content: (article.content as TipTapContent | null) ?? null,
+          status: article.status as ArticleStatus,
+          category_id: (article.category_id as string | null) ?? null,
+          brief_subject: (article.brief_subject as string | null) ?? null,
+          brief_audience: (article.brief_audience as string | null) ?? null,
+          brief_message: (article.brief_message as string | null) ?? null,
+          meta_title: (article.meta_title as string | null) ?? null,
+          meta_description: (article.meta_description as string | null) ?? null,
+          featured_image_url: (article.featured_image_url as string | null) ?? null,
+          reading_time_minutes: (article.reading_time_minutes as number | null) ?? null,
+        }}
+        categories={(categories ?? []).map((c) => ({
+          id: c.id as string,
+          name: c.name as string,
+        }))}
+      />
     </div>
   );
 }
-

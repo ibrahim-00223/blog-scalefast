@@ -117,3 +117,32 @@ export const CATEGORY_COLORS: Record<string, CategoryColors> = {
   ressources: { bg: "#EEF2FF", text: "#3B5BDB", border: "#C7D2FE" },
   analyse: { bg: "#FFF1F2", text: "#BE123C", border: "#FECDD3" },
 };
+
+// ─── AI Pipeline types ────────────────────────────────────────────────────────
+
+export type SSEAgentName = "keywords" | "redactor" | "validator";
+
+export type SSEEvent =
+  | { type: "pipeline_started" }
+  | { type: "agent_started"; agent: SSEAgentName }
+  | { type: "agent_progress"; agent: "redactor"; delta: string }
+  | { type: "agent_completed"; agent: SSEAgentName; summary: string }
+  | { type: "pipeline_completed"; articleId: string }
+  | { type: "error"; message: string };
+
+export interface KeywordsAgentOutput {
+  primary_keyword: string;
+  secondary_keywords: string[];
+  angle: string;
+  tone: string;
+  estimated_words: number;
+  h1: string;
+  outline: { h2: string; h3s: string[] }[];
+}
+
+export interface ValidatorAgentOutput {
+  score: number;
+  issues: string[];
+  suggestions: string[];
+  approved: boolean;
+}
