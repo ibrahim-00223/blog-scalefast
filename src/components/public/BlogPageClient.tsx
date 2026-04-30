@@ -22,24 +22,24 @@ interface BlogPageClientProps {
 function FeaturedCard({ article }: { article: ArticleWithCategory }) {
   const href = getArticleUrl(article.category.slug, article.slug);
   return (
-    <Link href={href} className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-sf-navy">
-      {/* Background image */}
-      <div className="absolute inset-0">
-        {article.featured_image_url ? (
+    <Link href={href} className="group relative flex h-full min-h-[340px] flex-col overflow-hidden rounded-2xl bg-[#0d1240] lg:min-h-[400px]">
+      {/* Background image — low opacity so text is always readable */}
+      {article.featured_image_url && (
+        <div className="absolute inset-0">
           <Image
             src={article.featured_image_url}
             alt={article.title}
             fill
-            className="object-cover opacity-40 transition duration-500 group-hover:opacity-50 group-hover:scale-[1.03]"
+            className="object-cover opacity-25 transition duration-500 group-hover:opacity-35 group-hover:scale-[1.03]"
             sizes="(max-width: 1024px) 100vw, 60vw"
             priority
           />
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-sf-blue via-sf-navy to-[#0d1240]" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-sf-navy via-sf-navy/60 to-transparent" />
-      </div>
-      {/* Content */}
+        </div>
+      )}
+      {/* Strong gradient — covers bottom 70% fully */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0d1240] from-50% via-[#0d1240]/80 to-transparent" />
+
+      {/* Content always at bottom, fully readable */}
       <div className="relative mt-auto flex flex-col gap-4 p-7 lg:p-8">
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-sf-blue px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
@@ -51,12 +51,12 @@ function FeaturedCard({ article }: { article: ArticleWithCategory }) {
           {article.title}
         </h2>
         {article.excerpt && (
-          <p className="line-clamp-2 text-sm leading-6 text-white/70">
+          <p className="line-clamp-2 text-sm leading-6 text-white/75">
             {article.excerpt}
           </p>
         )}
         <div className="flex items-center justify-between pt-1">
-          <div className="flex items-center gap-3 text-xs font-medium text-white/50">
+          <div className="flex items-center gap-3 text-xs font-medium text-white/60">
             {article.published_at && <span>{formatDate(article.published_at)}</span>}
             {article.reading_time_minutes && (
               <span className="flex items-center gap-1">
