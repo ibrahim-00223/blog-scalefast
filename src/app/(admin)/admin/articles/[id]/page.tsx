@@ -1,10 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ArticleEditorClient } from "@/components/admin/ArticleEditorClient";
-import { ChevronLeft } from "lucide-react";
 import type { TipTapContent, ArticleStatus } from "@/types";
 
 type Props = {
@@ -63,35 +61,24 @@ export default async function AdminArticleEditPage({ params, searchParams }: Pro
     statusMsg?.startsWith("error:") ? decodeURIComponent(statusMsg.slice(6)) : null;
 
   return (
-    <div className="sf-container space-y-6 py-8">
-      {/* Back nav */}
-      <Link
-        href="/admin/articles"
-        className="flex items-center gap-1 text-sm font-medium text-sf-gray-600 hover:text-sf-blue"
-      >
-        <ChevronLeft size={16} />
-        Articles
-      </Link>
-
-      {/* Notifications */}
-      {notif && (
-        <div
-          className={`rounded-xl border px-5 py-4 text-sm font-medium ${notif.bg} ${notif.text}`}
-        >
-          {notif.msg}
+    <div className="sf-container pb-12 pt-0">
+      {/* Notifications (shown below sticky bar) */}
+      {(notif || errorMsg) && (
+        <div className="pt-4 pb-2">
+          {notif && (
+            <div
+              className={`rounded-xl border px-5 py-4 text-sm font-medium ${notif.bg} ${notif.text}`}
+            >
+              {notif.msg}
+            </div>
+          )}
+          {errorMsg && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+              Erreur : {errorMsg}
+            </div>
+          )}
         </div>
       )}
-      {errorMsg && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
-          Erreur : {errorMsg}
-        </div>
-      )}
-
-      {/* Header */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-sf-blue">Éditeur</p>
-        <h1 className="mt-1 truncate text-2xl font-extrabold text-sf-navy">{article.title}</h1>
-      </div>
 
       {/* Editor */}
       <ArticleEditorClient

@@ -9,7 +9,7 @@ import { StatusBreakdown } from "@/components/admin/StatusBreakdown";
 import { CategoryBreakdown } from "@/components/admin/CategoryBreakdown";
 import { SeoPlaceholder } from "@/components/admin/SeoPlaceholder";
 import type { ArticleStatus } from "@/types";
-import { Plus } from "lucide-react";
+import { Plus, FileText, BookOpen, Clock, TrendingUp } from "lucide-react";
 
 export default async function AdminDashboardPage() {
   if (!hasSupabaseEnv()) redirect("/login");
@@ -92,24 +92,28 @@ export default async function AdminDashboardPage() {
           value={total}
           sublabel="tous statuts"
           accent="blue"
+          icon={FileText}
         />
         <KpiCard
           label="Publiés"
           value={publishedCount}
           sublabel={total > 0 ? `${Math.round((publishedCount / total) * 100)}% du total` : "—"}
           accent="green"
+          icon={BookOpen}
         />
         <KpiCard
           label="En review"
           value={reviewCount}
           sublabel="à valider"
           accent="amber"
+          icon={Clock}
         />
         <KpiCard
           label="Ce mois-ci"
           value={thisMonthCount}
           sublabel="nouveaux articles"
           accent="purple"
+          icon={TrendingUp}
         />
       </div>
 
